@@ -2,8 +2,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+from pathlib import Path
 
-file_path = "cars.csv"
+folder = Path(__file__).parent.parent
+file_path = folder / "data" / "cars.csv"
 PINK = "pink"
 GRID = "white"
 
@@ -41,7 +43,7 @@ def line_plot(df):
     plt.ylim(30, speed.max()+5)
     plt.grid(axis="y", color=GRID, alpha=0.3)
     plt.legend()
-    plt.savefig("cars_speed.png", dpi=150, bbox_inches="tight")
+    plt.savefig(folder / "cars_speed.png", dpi=150, bbox_inches="tight")
     plt.close()
 
 

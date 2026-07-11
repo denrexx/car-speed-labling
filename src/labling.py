@@ -1,14 +1,16 @@
 import csv
 from collections import defaultdict, deque
+from pathlib import Path
 
 import cv2
 from ultralytics import YOLO
 
 
 # 1st step: Get FPS, w and h
-video_path = "ScreenRecorderProject49.mp4"
-model = YOLO("yolo26s.pt")
-video = cv2.VideoCapture(video_path)
+folder = Path(__file__).parent.parent
+video_path = folder / "ScreenRecorderProject49.mp4"
+model = YOLO(folder / "yolo26s.pt")
+video = cv2.VideoCapture(str(video_path))
 
 if not video.isOpened():
     raise RuntimeError("Unable to open the video")
@@ -125,7 +127,7 @@ last_speeds = {}
 
 video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 fourcc = cv2.VideoWriter.fourcc(*"mp4v")
-writer = cv2.VideoWriter("result.mp4", fourcc, fps, (w, h))
+writer = cv2.VideoWriter(str(folder / "result.mp4"), fourcc, fps, (w, h))
 if not writer.isOpened():
     raise RuntimeError("Unable to create result video")
 
@@ -139,7 +141,7 @@ while True:
     result = model.track(
         img,
         persist=True,
-        tracker="bytetrack_custom.yaml",
+        tracker=str(folder / "bytetrack_custom.yaml"),
         imgsz=1280,
         classes=[2],
         conf=0.1,
@@ -220,7 +222,7 @@ saved_records.sort(key=lambda item: item["time"])
 for car_id, record in enumerate(saved_records, start=1):
     record["id"] = car_id
 
-with open("cars.csv", "w", newline="", encoding="utf-8") as file:
+with open(folder / "data" / "cars.csv", "w", newline="", encoding="utf-8") as file:
     columns = ["id", "time", "start", "end", "delta", "distance", "speed"]
     csv_writer = csv.DictWriter(file, fieldnames=columns)
     csv_writer.writeheader()
@@ -230,4 +232,4 @@ print("Cars:", len(counted_ids))
 saved_speeds = [record["speed"] for record in saved_records if record["speed"] != ""]
 if saved_speeds:
     print("Average speed:", round(sum(saved_speeds) / len(saved_speeds), 1), "km/h")
-print("Saved: result.mp4 and cars.csv")
+print("Saved: result.mp4 and data/cars.csv")
